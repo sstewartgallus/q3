@@ -10,6 +10,9 @@
 */
 
 pub use self::vecf::Vec3f;
+pub use self::veci::Vec3i;
+pub use self::veci8::Vec3i8;
+pub use self::vecu8::Vec3u8;
 
 macro_rules! declare
 (
@@ -26,12 +29,15 @@ macro_rules! declare
 
       impl $Type
       {
+        #[inline(always)]
         pub fn new(nx: $Component, ny: $Component, nz: $Component) -> $Type
         { $Type{ x: nx, y: ny, z: nz } }
 
+        #[inline(always)]
         pub fn zero() -> $Type
         { $Type{ x: 0 as $Component, y: 0 as $Component, z: 0 as $Component } }
 
+        #[inline(always)]
         pub fn normalize(&mut self)
         {
           let mut len = self.length();
@@ -44,11 +50,13 @@ macro_rules! declare
           self.z /= len;
         }
 
+        #[inline(always)]
         pub fn length(&self) -> $Component
         { float::sqrt(( (self.x * self.x) + 
                         (self.y * self.y) + 
                         (self.z * self.z)) as float) as $Component }
 
+        #[inline(always)]
         pub fn cross(&self, rhs: &$Type) -> $Type
         {
           $Type { x: (self.y * rhs.z) - (self.z * rhs.y),
@@ -56,12 +64,15 @@ macro_rules! declare
                   z: (self.x * rhs.y) - (self.y * rhs.x) }
         }
 
+        #[inline(always)]
         pub fn dot(&self, rhs: &$Type) -> $Component
         { (self.x * rhs.x) + (self.y * rhs.y) + (self.z * rhs.z) }
 
+        #[inline(always)]
         pub unsafe fn to_ptr(&self) -> *$Type
-        { ptr::addr_of(self) }
+        { ptr::to_unsafe_ptr(self) } 
 
+        #[inline(always)]
         pub fn to_str(&self) -> ~str
         { fmt!("(%?, %?, %?)", self.x, self.y, self.z) }
       }
@@ -125,4 +136,7 @@ macro_rules! declare
 )
 
 declare!(Vec3f, vecf, f32)
+declare!(Vec3i, veci, i32)
+declare!(Vec3i8, veci8, i8)
+declare!(Vec3u8, vecu8, u8)
 

@@ -30,6 +30,7 @@ pub trait Shaderable
   pub fn bind(&mut self);
   pub fn get_uniform_location(&self, uniform: &str) -> gl::GLint;
   pub fn update_uniform_i32(&self, location: gl::GLint, i: i32);
+  pub fn update_uniform_f32(&self, location: gl::GLint, i: f32);
   pub fn update_uniform_mat(&self, location: gl::GLint, mat: &Mat4x4);
 }
 
@@ -49,6 +50,7 @@ pub struct Debug_Shader
 #[cfg(debug_shader)]
 impl Debug_Shader
 {
+  #[inline(always)]
   pub fn new(vert_src : &str, frag_src : &str) -> @Shaderable
   {
     let shader = @mut Debug_Shader
@@ -142,12 +144,19 @@ impl Shader for Debug_Shader
     { shared::bind(self); }
   }
 
+  #[inline(always)]
   pub fn get_uniform_location(&self, uniform: &str) -> gl::GLint
   { if self.valid { return shared::get_uniform_location(self, uniform); } -1 }
 
+  #[inline(always)]
   pub fn update_uniform_i32(&self, location: gl::GLint, i: i32)
   { if self.valid { shared::update_uniform_i32(location, i); } }
 
+  #[inline(always)]
+  pub fn update_uniform_f32(&self, location: gl::GLint, i: f32)
+  { if self.valid { shared::update_uniform_f32(location, i); } }
+
+  #[inline(always)]
   pub fn update_uniform_mat(&self, location: gl::GLint, mat: &Mat4x4)
   { if self.valid { shared::update_uniform_mat(location, mat); } }
 }
@@ -163,6 +172,7 @@ pub struct Release_Shader
 #[cfg(release_shader)]
 impl Release_Shader
 {
+  #[inline(always)]
   pub fn new(vert_src : &str, frag_src : &str) -> @Shaderable
   {
     let mut shader = @mut Release_Shader{ prog: 0, vert_obj: 0, frag_obj: 0 };
@@ -172,9 +182,10 @@ impl Release_Shader
     shader as @Shaderable
   }
 
+  #[inline(always)]
   pub fn new_with_files(vert_file : &str, frag_file : &str) -> @Shaderable
   {
-    let mut shader = @mut Release_Shader{ prog: 0, vert_obj: 0, frag_obj: 0 };
+    let shader = @mut Release_Shader{ prog: 0, vert_obj: 0, frag_obj: 0 };
 
     let fio = io::file_reader(&Path(vert_file)).unwrap();
     let vert_src = str::from_bytes(fio.read_whole_stream());
@@ -191,15 +202,23 @@ impl Release_Shader
 #[cfg(release_shader)]
 impl Shader for Release_Shader
 {
+  #[inline(always)]
   pub fn bind(&mut self)
   { shared::bind(self); }
 
+  #[inline(always)]
   pub fn get_uniform_location(&self, uniform: &str) -> gl::GLint
   { shared::get_uniform_location(self, uniform) }
 
+  #[inline(always)]
   pub fn update_uniform_i32(&self, location: gl::GLint, i: i32)
   { shared::update_uniform_i32(location, i) }
 
+  #[inline(always)]
+  pub fn update_uniform_f32(&self, location: gl::GLint, i: f32)
+  { if self.valid { shared::update_uniform_f32(location, i); } }
+
+  #[inline(always)]
   pub fn update_uniform_mat(&self, location: gl::GLint, mat: &Mat4x4)
   { shared::update_uniform_mat(location, mat) }
 }
@@ -292,15 +311,23 @@ mod shared
     true
   }
 
+  #[inline(always)]
   pub fn bind(shader: &mut super::Shader_Builder)
   { check!(gl::use_program(shader.prog)); }
 
+  #[inline(always)]
   pub fn get_uniform_location(shader: &super::Shader_Builder, uniform: &str) -> gl::GLint
   { check!(gl::get_uniform_location(shader.prog, uniform.to_owned())) }
 
+  #[inline(always)]
   pub fn update_uniform_i32(location: gl::GLint, i: i32)
   { check!(gl::uniform_1i(location, i)); }
 
+  #[inline(always)]
+  pub fn update_uniform_f32(location: gl::GLint, i: f32)
+  { check!(gl::uniform_1f(location, i)); }
+
+  #[inline(always)]
   pub fn update_uniform_mat(location: gl::GLint, mat: &Mat4x4)
   { 
     unsafe

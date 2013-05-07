@@ -21,9 +21,6 @@ mod util;
 #[macro_escape]
 mod check_internal;
 
-#[path = "../obj/mod.rs"]
-mod obj;
-
 static Move_Left: u8 = 1;
 static Move_Right: u8 = 2;
 static Move_Forward: u8 = 4;
@@ -61,6 +58,7 @@ pub struct Camera
 }
 impl Camera
 {
+  #[inline(always)]
   pub fn new(win: @glfw::Window) -> Camera
   {
     Camera {  position: Vec3f::zero(),
@@ -81,9 +79,10 @@ impl Camera
     }
   }
 
+  #[inline(always)]
   pub fn init(&mut self)
   {
-    //check!(gl::enable(gl::CULL_FACE)); /* TODO: Look into winding. */
+    check!(gl::enable(gl::CULL_FACE)); 
     check!(gl::enable(gl::DEPTH_TEST));
     check!(gl::depth_func(gl::LEQUAL));
     check!(gl::clear_color(0.0, 0.0, 0.0, 1.0));
@@ -92,6 +91,7 @@ impl Camera
     { (width, height) => self.resize(width as i32, height as i32) }
   }
 
+  #[inline(always)]
   pub fn resize(&mut self, new_width: i32, new_height: i32)
   {
     self.window_size.x = new_width;
@@ -203,13 +203,5 @@ impl Camera
     if self.move_to & Move_Down > 0
     { self.position.y -= self.move_speed * dt; }
   }
-}
-
-impl obj::traits::Movable for Camera
-{
-  pub fn translate(&mut self, _new_position: Vec3f) /* TODO: wtf */
-  { }
-  pub fn translate_to(&mut self, _new_position: Vec3f)
-  { }
 }
 

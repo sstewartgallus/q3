@@ -10,6 +10,7 @@
 */
 
 use math::{ Vec3f, Vec4u8, BB3 };
+use primitive::Triangle;
 
 #[path = "lump.rs"]
 mod lump;
@@ -23,6 +24,7 @@ pub struct Map
 {
   header: lump::Header,
   entity: lump::Entity,
+  tris: ~[Triangle],
   verts: ~[lump::Vertex],
   faces: ~[lump::Face],
   mesh_verts: ~[lump::Mesh_Vert], 
@@ -36,20 +38,23 @@ impl Map
 {
   pub fn new(file: &str) -> Map
   {
-    let mut map = Map{  header: lump::Header::new(),
-                        entity: lump::Entity::new(),
-                        verts: ~[],
-                        faces: ~[],
-                        mesh_verts: ~[],
-                        vao: 0,
-                        vbo: ~[],
-                        position: Vec3f::zero(),
-                        bb: BB3::zero()
-                        };
+    let mut map = Map
+    {
+      header: lump::Header::new(),
+      entity: lump::Entity::new(),
+      tris: ~[],
+      verts: ~[],
+      faces: ~[],
+      mesh_verts: ~[],
+      vao: 0,
+      vbo: ~[],
+      position: Vec3f::zero(),
+      bb: BB3::zero(),
+    };
 
     let mut fio = io::file_reader(@path::PosixPath(file)).unwrap();
     unsafe {  fio.read( cast::transmute((&map.header, sys::size_of::<lump::Header>())),
-              sys::size_of::<lump::Header>()); }
+                        sys::size_of::<lump::Header>()); }
 
     assert!( map.header.magic[0] == 'I' as i8 &&
              map.header.magic[1] == 'B' as i8 &&
@@ -81,7 +86,7 @@ impl Map
       unsafe { fio.read( cast::transmute((&vert, sys::size_of::<lump::Vertex>())),
                 sys::size_of::<lump::Vertex>()); }
       
-      /* BSP likes Z to be up; I like Y to be up. */
+      /* BSP likes Z to be up; we like Y to be up. */
       let temp = vert.position.y;
       vert.position.y = vert.position.z;
       vert.position.z = -temp;
@@ -180,15 +185,19 @@ impl Map
             verts.push(self.verts[face.start_vertex]);
             verts.push(self.verts[face.start_vertex + i + 2]);
             verts.push(self.verts[face.start_vertex + i + 1]);
+
+            self.tris.push(Triangle::new_with_position( self.verts[face.start_vertex].position,
+                                                        self.verts[face.start_vertex + i + 2].position,
+                                                        self.verts[face.start_vertex + i + 1].position));
           }
         }
         /* Something else. */
-        n => { io::println(fmt!("BSP: Invalid face: %?", n)); }
+        n => { warn!(fmt!("BSP: Invalid face: %?", n)); }
       }
     };
 
     self.verts = verts;
-    debug!("Trianglulated to %? faces.", self.verts.len());
+    debug!("BSP: Trianglulated to %? faces.", self.verts.len());
   }
 
   priv fn upload(&mut self)
@@ -224,6 +233,7 @@ impl Map
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, 0));
   }
 
+  #[inline(always)]
   pub fn center(&self) -> Vec3f
   { self.bb.center_with_offset(self.position) }
 }
