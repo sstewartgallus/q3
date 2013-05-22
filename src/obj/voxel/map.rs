@@ -65,21 +65,13 @@ impl Map
     let voxel = 
     ~[
       -h, h, h, // front top left
-      -h, h, h, // front top left
-      h, h, h, // front top right
       h, h, h, // front top right
       h, h, -h, // back top right
-      h, h, -h, // back top right
-      -h, h, -h, // back top left
       -h, h, -h, // back top left
 
       -h, -h, h, // front bottom left
-      -h, -h, h, // front bottom left
-      h, -h, h, // front bottom right
       h, -h, h, // front bottom right
       h, -h, -h, // back bottom right
-      h, -h, -h, // back bottom right
-      -h, -h, -h, // back bottom left
       -h, -h, -h, // back bottom left
     ];
     let voxel_verts: ~[u8] = 
@@ -116,7 +108,8 @@ impl Map
     check!(gl::bind_buffer(gl::ELEMENT_ARRAY_BUFFER, self.vibo));
 
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, self.vbo));
-    check!(gl::vertex_attrib_pointer_f32(0, 3, false, (sys::size_of::<Vertex_PC>()) as i32, 0));
+    //check!(gl::vertex_attrib_pointer_f32(0, 3, false, (sys::size_of::<Vertex_PC>()) as i32, 0));
+    check!(gl::vertex_attrib_pointer_f32(0, 3, false, 0, 0));
     check!(gl::enable_vertex_attrib_array(0));
 
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, self.ibo));
