@@ -32,6 +32,7 @@ struct Map
 
   vao: gl::GLuint,
   vbo: gl::GLuint,
+  vibo: gl::GLuint,
   ibo: gl::GLuint,
 
   voxels: ~[Behavior],
@@ -48,6 +49,7 @@ impl Map
       voxel_size: 0.0,
       vao: 0,
       vbo: 0,
+      vibo: 0,
       ibo: 0,
       voxels: ~[],
       indices: ~[],
@@ -56,15 +58,50 @@ impl Map
     map.voxelize(tris);
 
     /* Single voxel that will be instance-rendered. */
-    let mut voxel = ~[];
-    voxel.push(Cube::new(map.voxel_size, Vec3f::zero()));
+    //let mut voxel = ~[];
+    //voxel.push(Cube::new(map.voxel_size, Vec3f::zero()));
+
+    let h: f32 = map.voxel_size / 2.0;
+    let voxel = 
+    ~[
+      -h, h, h, // front top left
+      -h, h, h, // front top left
+      h, h, h, // front top right
+      h, h, h, // front top right
+      h, h, -h, // back top right
+      h, h, -h, // back top right
+      -h, h, -h, // back top left
+      -h, h, -h, // back top left
+
+      -h, -h, h, // front bottom left
+      -h, -h, h, // front bottom left
+      h, -h, h, // front bottom right
+      h, -h, h, // front bottom right
+      h, -h, -h, // back bottom right
+      h, -h, -h, // back bottom right
+      -h, -h, -h, // back bottom left
+      -h, -h, -h, // back bottom left
+    ];
+    let voxel_verts: ~[u8] = 
+    ~[
+      0, 4, 5, 0, 5, 1, // front
+      3, 7, 4, 3, 4, 0, // left
+      1, 5, 6, 1, 6, 2, // right
+      3, 0, 1, 3, 1, 2, // top
+      4, 7, 6, 4, 6, 5, // bottom
+      2, 6, 7, 2, 7, 3 // back
+    ];
 
     map.vao = check!(gl::gen_vertex_arrays(1))[0]; /* TODO: Check these. */
     map.vbo = check!(gl::gen_buffers(1))[0];
+    map.vibo = check!(gl::gen_buffers(1))[0];
     map.ibo = check!(gl::gen_buffers(1))[0];
     check!(gl::bind_vertex_array(map.vao));
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, map.vbo));
     check!(gl::buffer_data(gl::ARRAY_BUFFER, voxel, gl::STATIC_DRAW));
+
+    check!(gl::bind_buffer(gl::ELEMENT_ARRAY_BUFFER, map.vibo));
+    check!(gl::buffer_data(gl::ELEMENT_ARRAY_BUFFER, voxel_verts, gl::STATIC_DRAW));
 
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, map.ibo));
     check!(gl::buffer_data(gl::ARRAY_BUFFER, map.indices, gl::STATIC_DRAW));
@@ -75,6 +112,8 @@ impl Map
   pub fn draw(&self)
   {
     check!(gl::bind_vertex_array(self.vao));
+
+    check!(gl::bind_buffer(gl::ELEMENT_ARRAY_BUFFER, self.vibo));
 
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, self.vbo));
     check!(gl::vertex_attrib_pointer_f32(0, 3, false, (sys::size_of::<Vertex_PC>()) as i32, 0));
@@ -92,7 +131,9 @@ impl Map
     check!(gl::vertex_attrib_divisor(2, 1));
 
     //check!(gl::polygon_mode(gl::FRONT_AND_BACK, gl::LINE));
-    check!(gl::draw_arrays_instanced(gl::TRIANGLES, 0, 36, self.indices.len() as i32));
+    //check!(gl::draw_arrays_instanced(gl::TRIANGLES, 0, 36, self.indices.len() as i32));
+    //check!(gl::draw_elements(gl::TRIANGLES, 36, gl::UNSIGNED_BYTE, None));
+    check!(gl::draw_elements_instanced(gl::TRIANGLES, 36, gl::UNSIGNED_BYTE, None, self.indices.len() as gl::GLint));
     //check!(gl::polygon_mode(gl::FRONT_AND_BACK, gl::FILL));
 
     check!(gl::disable_vertex_attrib_array(0));
