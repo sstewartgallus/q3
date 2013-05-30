@@ -10,7 +10,7 @@
 */
 
 use math::Vec3f;
-use primitive::{ Triangle, Triangle_Index };
+use primitive::{ Vertex_PC, Triangle, Triangle_Index };
 
 #[packed]
 struct Cube
@@ -21,47 +21,88 @@ impl Cube
 {
   pub fn new(size: f32, center: Vec3f) -> Cube
   {
+    Cube::new_with_color(size, center, Vec3f::new(1.0, 1.0, 1.0))
+  }
+
+  pub fn new_with_color(size: f32, center: Vec3f, color: Vec3f) -> Cube
+  {
     let half = size / 2.0;
     Cube
     {
       tris:
       ([
-          Triangle::new_with_position(Vec3f::new(-half,-half,-half) + center, 
-                                      Vec3f::new(-half,-half, half) + center,
-                                      Vec3f::new(-half, half, half) + center),
-          Triangle::new_with_position(Vec3f::new(half, half,-half) + center,
-                                      Vec3f::new(-half,-half,-half) + center,
-                                      Vec3f::new(-half, half,-half) + center),
-          Triangle::new_with_position(Vec3f::new(half,-half, half) + center,
-                                      Vec3f::new(-half,-half,-half) + center,
-                                      Vec3f::new(half,-half,-half) + center),
-          Triangle::new_with_position(Vec3f::new(half, half,-half) + center,
-                                      Vec3f::new(half,-half,-half) + center,
-                                      Vec3f::new(-half,-half,-half) + center),
-          Triangle::new_with_position(Vec3f::new(-half,-half,-half) + center,
-                                      Vec3f::new(-half, half, half) + center,
-                                      Vec3f::new(-half, half,-half) + center),
-          Triangle::new_with_position(Vec3f::new(half,-half, half) + center,
-                                      Vec3f::new(-half,-half, half) + center,
-                                      Vec3f::new(-half,-half,-half) + center),
-          Triangle::new_with_position(Vec3f::new(-half, half, half) + center,
-                                      Vec3f::new(-half,-half, half) + center,
-                                      Vec3f::new(half,-half, half) + center),
-          Triangle::new_with_position(Vec3f::new(half, half, half) + center,
-                                      Vec3f::new(half,-half,-half) + center,
-                                      Vec3f::new(half, half,-half) + center),
-          Triangle::new_with_position(Vec3f::new(half,-half,-half) + center,
-                                      Vec3f::new(half, half, half) + center,
-                                      Vec3f::new(half,-half, half) + center),
-          Triangle::new_with_position(Vec3f::new(half, half, half) + center,
-                                      Vec3f::new(half, half,-half) + center,
-                                      Vec3f::new(-half, half,-half) + center),
-          Triangle::new_with_position(Vec3f::new(half, half, half) + center,
-                                      Vec3f::new(-half, half,-half) + center,
-                                      Vec3f::new(-half, half, half) + center),
-          Triangle::new_with_position(Vec3f::new(half, half, half) + center,
-                                      Vec3f::new(-half, half, half) + center,
-                                      Vec3f::new(half,-half, half) + center),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(-half,-half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half,-half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half, half, half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half, half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half,-half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half, half,-half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half,-half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half,-half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(half,-half,-half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half, half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(half,-half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half,-half,-half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(-half,-half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half, half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half, half,-half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half,-half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half,-half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half,-half,-half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(-half, half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half,-half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(half,-half, half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half, half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(half,-half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(half, half,-half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half,-half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(half, half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(half,-half, half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half, half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(half, half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half, half,-half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half, half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half, half,-half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half, half, half) + center, color)
+          ),
+          Triangle::new
+          (
+            Vertex_PC::new(Vec3f::new(half, half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(-half, half, half) + center, color),
+            Vertex_PC::new(Vec3f::new(half,-half, half) + center, color)
+          )
     ])
     }
   }

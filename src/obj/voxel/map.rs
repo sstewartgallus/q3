@@ -11,7 +11,7 @@
 */
 
 use math::{ Vec3f, Vec3i, Vec3u8 };
-use primitive::Triangle;
+use primitive::{ Cube, Cube_Index, Vertex_PC, Triangle };
 use super::{ Vertex, Behavior, Default };
 
 #[path = "../../gl/mod.rs"]
@@ -31,8 +31,8 @@ struct Map
   vbo: gl::GLuint,
   ibo: gl::GLuint,
 
-  voxels: ~[Behavior],
-  indices: ~[Vertex],
+  voxels: ~[Cube],
+  indices: ~[Cube_Index],
 }
 
 impl Map
@@ -85,7 +85,8 @@ impl Map
     map.ibo = names[1];
     check!(gl::bind_vertex_array(map.vao));
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, map.vbo));
-    check!(gl::buffer_data(gl::ARRAY_BUFFER, voxel, gl::STATIC_DRAW));
+    //check!(gl::buffer_data(gl::ARRAY_BUFFER, voxel, gl::STATIC_DRAW));
+    check!(gl::buffer_data(gl::ARRAY_BUFFER, map.voxels, gl::STATIC_DRAW));
 
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, map.ibo));
     check!(gl::buffer_data(gl::ARRAY_BUFFER, map.indices, gl::STATIC_DRAW));
@@ -95,6 +96,7 @@ impl Map
 
   pub fn draw(&self)
   {
+    /*
     check!(gl::bind_vertex_array(self.vao));
 
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, self.vbo));
@@ -121,6 +123,27 @@ impl Map
     check!(gl::disable_vertex_attrib_array(2));
     check!(gl::bind_vertex_array(0));
     check!(gl::bind_buffer(gl::ARRAY_BUFFER, 0));
+    */
+
+    check!(gl::bind_vertex_array(self.vao));
+    check!(gl::bind_buffer(gl::ARRAY_BUFFER, self.vbo));
+    //check!(gl::bind_buffer(gl::ELEMENT_ARRAY_BUFFER, self.ibo));
+
+    check!(gl::vertex_attrib_pointer_f32(0, 3, false, (sys::size_of::<Vertex_PC>()) as i32, 0));
+    check!(gl::vertex_attrib_pointer_f32(1, 3, false, (sys::size_of::<Vertex_PC>()) as i32, sys::size_of::<Vec3f>() as u32));
+    check!(gl::enable_vertex_attrib_array(0));
+    check!(gl::enable_vertex_attrib_array(1));
+
+    //check!(gl::polygon_mode(gl::FRONT_AND_BACK, gl::LINE));
+    //check!(gl::draw_elements(gl::TRIANGLES, self.indices.len() as i32 * 36, gl::UNSIGNED_INT, None));
+    check!(gl::draw_arrays(gl::TRIANGLES, 0, self.voxels.len() as i32 * 36));
+    //check!(gl::polygon_mode(gl::FRONT_AND_BACK, gl::FILL));
+
+    check!(gl::disable_vertex_attrib_array(0));
+    check!(gl::disable_vertex_attrib_array(1));
+    check!(gl::bind_vertex_array(0));
+    check!(gl::bind_buffer(gl::ARRAY_BUFFER, 0));
+    //check!(gl::bind_buffer(gl::ELEMENT_ARRAY_BUFFER, 0));
   }
 
   priv fn voxelize(&mut self, tris: &[Triangle])
@@ -164,17 +187,27 @@ impl Map
     let mid_offset = (((self.resolution as f32) / 2.0) * self.voxel_size);
     debug!("VOXEL: Midpoint offset is %?", mid_offset);
 
-    self.voxels = vec::with_capacity((f32::pow((self.resolution + 1) as f32, 3.0)) as uint);
-    self.indices = vec::with_capacity((f32::pow((self.resolution + 1) as f32, 3.0)) as uint);
+    //self.voxels = vec::with_capacity((f32::pow((self.resolution + 1) as f32, 3.0)) as uint);
+    //self.indices = vec::with_capacity((f32::pow((self.resolution + 1) as f32, 3.0)) as uint);
+    debug!("VOXEL: Allocated voxel (%?) and index (%?) buffers", self.voxels.len(), self.indices.len());
     for uint::range(0, self.resolution as uint) |_z| 
     { for uint::range(0, self.resolution as uint) |_y|
       { for uint::range(0, self.resolution as uint) |_x|
         {
-          self.voxels.push(Default);
+          //self.voxels.push(Default);
+          let c = Vec3f::new
+          (
+            (_x as f32 * self.voxel_size) - mid_offset + (self.voxel_size / 2.0),
+            (_y as f32 * self.voxel_size) - mid_offset + (self.voxel_size / 2.0),
+            (_z as f32 * self.voxel_size) - mid_offset + (self.voxel_size / 2.0
+          )) - center;
+          
+          //let cube = Cube::new(self.voxel_size, c);
+          //self.voxels.push(cube);
         }
       }
     }
-    assert!(self.voxels.len() == (f32::pow((self.resolution) as f32, 3.0)) as uint);
+    //assert!(self.voxels.len() == (f32::pow((self.resolution) as f32, 3.0)) as uint);
 
     for tris.each |tri|
     {
@@ -236,14 +269,20 @@ impl Map
             if tri_cube_intersect(c, self.voxel_size, tri)
             {
               /* We have intersection; add a reference to this voxel to the index map. */
-              self.indices.push(Vertex
-              {
-                position: Vec3i::new( x - (self.resolution / 2) as i32, /* TODO: Remove duplicates. */
-                                      y - (self.resolution / 2) as i32,
-                                      z - (self.resolution / 2) as i32), 
-                color: Vec3u8::new(tri.verts[0].color.x as u8, tri.verts[0].color.y as u8, tri.verts[0].color.z as u8), /* TODO: Conversion between Vec types. */
-                unused: 0,
-              });
+              //self.indices.push(Vertex
+              //{
+              //  position: Vec3i::new( x - (self.resolution / 2) as i32, /* TODO: Remove duplicates. */
+              //                        y - (self.resolution / 2) as i32,
+              //                        z - (self.resolution / 2) as i32), 
+              //  color: Vec3u8::new(tri.verts[0].color.x as u8, tri.verts[0].color.y as u8, tri.verts[0].color.z as u8), /* TODO: Conversion between Vec types. */
+              //  unused: 0,
+              //});
+              
+              //let index = (z * ((self.resolution * self.resolution) as i32)) + (y * (self.resolution as i32)) + x;
+              //self.indices.push(Cube_Index::new(index as u32));
+
+              let cube = Cube::new_with_color(self.voxel_size, c, Vec3f::new(tri.verts[0].color.x / 255.0, tri.verts[0].color.y / 255.0, tri.verts[0].color.z / 255.0));
+              self.voxels.push(cube);
             }
             
             x += 1;

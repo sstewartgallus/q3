@@ -79,7 +79,7 @@ fn main() {
     let map = bsp::Map::new("data/maps/q3ctf1.bsp");
 
     let st = extra::time::precise_time_s();
-    let vox_map = voxel::Map::new(map.tris, 200);
+    let vox_map = voxel::Map::new(map.tris, 500);
     let et = extra::time::precise_time_s();
     io::println(fmt!("Voxel map creation took %? seconds.", (et - st)));
 
@@ -127,7 +127,7 @@ fn main() {
         color_shader.bind();
         //map.draw();
 
-        vox_shader.bind();
+        //vox_shader.bind();
         vox_map.draw();
 
         ui_renderer.begin(camera);
